@@ -4,7 +4,7 @@ This repository contains Perception Fused Iterative Tomography Reconstruction En
 
 We also provide a one-time post-correction method with the pretrained network for testing and comparison.
 
-The model weight can be download with link:
+The model weights can be downloaded using the following link:
 https://drive.google.com/file/d/1rqop4dAZ5QSjZluPkQnnMj5Qkmn5gtKo/view?usp=drive_link
 
 ![image](https://github.com/user-attachments/assets/c79f6bc1-97b4-4d0e-a25b-1504fd1dea57)
