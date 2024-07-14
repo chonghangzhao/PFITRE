@@ -6,9 +6,9 @@ This repository contains Perception Fused Iterative Tomography Reconstruction En
 The model weights can be downloaded using the following link:
 https://drive.google.com/file/d/1rqop4dAZ5QSjZluPkQnnMj5Qkmn5gtKo/view?usp=drive_link
 
-![image](https://github.com/user-attachments/assets/c79f6bc1-97b4-4d0e-a25b-1504fd1dea57)
-
 
 ## Examples
 
 We provide an approach for using PFITRE for iterative correction, as well as a one-time post-correction option with the pretrained network for testing and comparison.
+
+[PFITRE for 2D and 3D tomography images](https://github.com/chonghangzhao/PFITRE/blob/main/Demo/PFITRE%20Demo.ipynb)
