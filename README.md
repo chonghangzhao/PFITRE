@@ -12,3 +12,7 @@ https://drive.google.com/file/d/1rqop4dAZ5QSjZluPkQnnMj5Qkmn5gtKo/view?usp=drive
 We provide an approach for using PFITRE for iterative correction, as well as a one-time post-correction option with the pretrained network for testing and comparison.
 
 [PFITRE for 2D and 3D tomography images](https://github.com/chonghangzhao/PFITRE/blob/main/Demo/PFITRE_Demo_Colab.ipynb)
+
+
+## Citing Us
+If you use PFITRE model, we would appreciate your references to [our paper](https://arxiv.org/abs/2503.19248).
