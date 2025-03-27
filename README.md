@@ -16,3 +16,12 @@ We provide an approach for using PFITRE for iterative correction, as well as a o
 
 ## Citing Us
 If you use PFITRE model, we would appreciate your references to [our paper](https://arxiv.org/abs/2503.19248).
+
+```
+@article{PFITRE,
+  title = {Limited-angle x-ray nano-tomography with machine-learning enabled iterative reconstruction engine},
+  author = {Chonghang Zhao, Mingyuan Ge, Xiaogang Yang, Yong S. Chu, Hanfei Yan},
+  Eprint = {10.48550/arXiv.2503.19248},
+  year = {2025}
+}
+```
