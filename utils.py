@@ -480,3 +480,40 @@ def recon_ADMM_NN_TV_3D(sinogram, theta, Model, iter_num, ADMM_rho_const,
    recon_3D_p1 = np.float32(np.array(recon_3D_p1))
    return recon_3D_p1
     
+
+def recon_ADMM_NN_TV_3D(sinogram, theta, Model, iter_num, ADMM_rho_const,
+                       cor_shift=0, initial=None, start_slice=0, mask_boundary=False,
+                       mask_ratio=0.95, norm_quant=False, TV=False):
+    """
+    A 3D function that allows you to select a starting slice for better consistency
+    """
+    sz = np.shape(sinogram)
+    recon_3D_p1 =[]
+    recon_init = initial
+    for i in range(start_slice,-1,-1):
+        sino = sinogram[:,i,:]
+        recon, x_list = recon_ADMM_NN_TV(sino, theta, Model, iter_num=iter_num,
+                                         ADMM_rho_const=ADMM_rho_const,cor_shift=cor_shift,
+                                         initial=recon_init, mask_boundary=mask_boundary,
+                                         mask_ratio=mask_ratio, norm_quant=norm_quant, TV=TV)
+        recon_init = recon
+        recon_3D_p1.append(recon)
+
+    recon_3D_p2 =[]
+    recon_init = recon_3D_p1[0]
+
+    for i in range(start_slice+1,sz[1]):
+
+        sino = sinogram[:,i,:]
+        recon, x_list = recon_ADMM_NN_TV(sino, theta, Model, iter_num=iter_num,
+                                         ADMM_rho_const=ADMM_rho_const,cor_shift=cor_shift,
+                                         initial=recon_init, mask_boundary=mask_boundary,
+                                         mask_ratio=mask_ratio, norm_quant=norm_quant, TV=TV)
+        recon_init = recon
+        recon_3D_p2.append(recon)
+
+    recon_3D_p1 = recon_3d_p1[::-1]
+    recon_3D_p1.extend(recon_3D_p2)
+    recon_3D_p1 = np.float32(np.array(recon_3D_p1))
+
+    return recon_3D_p1
