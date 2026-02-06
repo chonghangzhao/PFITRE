@@ -3,7 +3,7 @@ import torchvision
 from torch import nn
 from torch.nn import functional as F
 from torchvision import models
-
+from torchvision.models import VGG11_Weights
 
 def conv3x3(in_: int, out: int) -> nn.Module:
     return nn.Conv2d(in_, out, 3, padding=1)
@@ -109,7 +109,8 @@ class PFITRE_net(nn.Module):
         self.pool1 = nn.Conv2d(64,64, 2, stride=2)
         self.pool2 = nn.Conv2d(128,128,2, stride=2)
 
-        self.encoder = models.vgg11(pretrained=pretrained).features 
+        # self.encoder = models.vgg11(pretrained=pretrained).features 
+        self.encoder = models.vgg11(weights=VGG11_Weights.DEFAULT if pretrained else None).features
         self.relu = nn.GELU() 
         self.conv1 = self.encoder[0]
         self.conv2 = self.encoder[3]
