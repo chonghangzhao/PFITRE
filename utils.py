@@ -397,7 +397,7 @@ def recon_ADMM_NN_TV(sinogram, theta, Model, iter_num=8, ADMM_rho_const=5, cor_s
         # solving quadratic problem using linalg solver
         A_to_solver = scipy.sparse.linalg.LinearOperator((rec_dim,rec_dim), matvec=ADMM_Ax, rmatvec=ADMM_Atb)
         b_to_solver = b_to_solver_const + ADMM_rho_const*(z-u)
-        outputSolver = scipy.sparse.linalg.gmres(A_to_solver, b_to_solver, x0=np.ravel(z), tol = 1e-05, maxiter = 15) 
+        outputSolver = scipy.sparse.linalg.gmres(A_to_solver, b_to_solver, x0=np.ravel(z), rtol = 1e-05, maxiter = 15) 
         X = np.float32(outputSolver[0]) 
         
         X[X < 0.0] = 0.0
@@ -449,19 +449,20 @@ def recon_ADMM_NN_TV(sinogram, theta, Model, iter_num=8, ADMM_rho_const=5, cor_s
     
     return X.reshape([ObjSize, ObjSize]), x_updatelist
 
-
 def recon_ADMM_NN_TV_3D(sinogram, theta, Model, iter_num, ADMM_rho_const, 
                        cor_shift=0, initial=None, start_slice=0, mask_boundary=False,
                        mask_ratio=0.95, norm_quant=False, TV=False):
+    """
+    A 3D function that does the reconstruction from the specified starting slice and use the result as the initial guess of the next one.
+    """
     sz = np.shape(sinogram)
-     
     recon_3D_p1 =[]
     recon_init = initial
     for i in range(start_slice,-1,-1):
         sino = sinogram[:,i,:]
         recon, x_list = recon_ADMM_NN_TV(sino, theta, Model, iter_num=iter_num,
                                          ADMM_rho_const=ADMM_rho_const,cor_shift=cor_shift,
-                                         initial=recon_init, mask_boundary=mak_boundary, 
+                                         initial=recon_init, mask_boundary=mask_boundary, 
                                          mask_ratio=mask_ratio, norm_quant=norm_quant, TV=TV)
         recon_init = recon
         recon_3D_p1.append(recon)
@@ -471,49 +472,33 @@ def recon_ADMM_NN_TV_3D(sinogram, theta, Model, iter_num, ADMM_rho_const,
         sino = sinogram[:,i,:]
         recon, x_list = recon_ADMM_NN_TV(sino, theta, Model, iter_num=iter_num,
                                          ADMM_rho_const=ADMM_rho_const,cor_shift=cor_shift,
-                                         initial=recon_init, mask_boundary=mak_boundary, 
+                                         initial=recon_init, mask_boundary=mask_boundary, 
                                          mask_ratio=mask_ratio, norm_quant=norm_quant, TV=TV)
         recon_init = recon
         recon_3D_p2.append(recon)
-   recon_3D_p1 = recon_3d_p1[::-1]
-   recon_3D_p1.extend(recon_3D_p2)
-   recon_3D_p1 = np.float32(np.array(recon_3D_p1))
-   return recon_3D_p1
-    
-
-def recon_ADMM_NN_TV_3D(sinogram, theta, Model, iter_num, ADMM_rho_const,
-                       cor_shift=0, initial=None, start_slice=0, mask_boundary=False,
-                       mask_ratio=0.95, norm_quant=False, TV=False):
-    """
-    A 3D function that allows you to select a starting slice for better consistency
-    """
-    sz = np.shape(sinogram)
-    recon_3D_p1 =[]
-    recon_init = initial
-    for i in range(start_slice,-1,-1):
-        sino = sinogram[:,i,:]
-        recon, x_list = recon_ADMM_NN_TV(sino, theta, Model, iter_num=iter_num,
-                                         ADMM_rho_const=ADMM_rho_const,cor_shift=cor_shift,
-                                         initial=recon_init, mask_boundary=mask_boundary,
-                                         mask_ratio=mask_ratio, norm_quant=norm_quant, TV=TV)
-        recon_init = recon
-        recon_3D_p1.append(recon)
-
-    recon_3D_p2 =[]
-    recon_init = recon_3D_p1[0]
-
-    for i in range(start_slice+1,sz[1]):
-
-        sino = sinogram[:,i,:]
-        recon, x_list = recon_ADMM_NN_TV(sino, theta, Model, iter_num=iter_num,
-                                         ADMM_rho_const=ADMM_rho_const,cor_shift=cor_shift,
-                                         initial=recon_init, mask_boundary=mask_boundary,
-                                         mask_ratio=mask_ratio, norm_quant=norm_quant, TV=TV)
-        recon_init = recon
-        recon_3D_p2.append(recon)
-
-    recon_3D_p1 = recon_3d_p1[::-1]
+    recon_3D_p1 = recon_3D_p1[::-1]
     recon_3D_p1.extend(recon_3D_p2)
     recon_3D_p1 = np.float32(np.array(recon_3D_p1))
-
     return recon_3D_p1
+
+def create_circular_mask(h, w, radius):
+    mask = np.zeros((h,w),dtype='int')
+    cen_h = h//2
+    cen_w = w//2
+    m = np.mgrid[0:h,0:w]
+    r = np.sqrt((m[0]-cen_h)**2 + (m[1]-cen_w)**2)
+    mask[r<radius] = 1
+    return mask
+
+def normalize_sinogram(im):
+    sz = np.shape(im)
+    out_im = np.zeros(sz)
+    ratio = np.zeros((sz[1],sz[0]))
+    for i in range(sz[1]):
+        mass = np.squeeze(np.sum(im[0,i,:]))
+        for j in range(sz[0]):
+            new_mass = np.squeeze(np.sum(im[j,i,:]))
+            ratio[i,j] = mass/(new_mass+1e-6)
+            out_im[j,i,:] = im[j,i,:]*ratio[i,j]
+            #mass = new_mass
+    return out_im, ratio
